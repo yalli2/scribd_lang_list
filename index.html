@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribd Language Library · 언어별 교재 찾기</title>
+<meta name="description" content="Scribd에서 100페이지 이상 외국어 교재를 언어별·분야별로 바로 찾는 검색 허브">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --paper:#fffdf9; --ink:#1d1b18; --muted:#6c665d; --line:#e4ddd2;
+  --accent:#c2410c; --accent-soft:#fdebdd; --teal:#0f766e; --teal-soft:#d9f2ee;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(40,30,10,.06);
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Noto Sans KR",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{background:var(--ink);color:#fbf7f0;padding:28px 0 22px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(194,65,12,.55),transparent 70%)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:relative;z-index:1}
+.brand small{display:block;letter-spacing:.18em;font-size:12px;color:#e9b48f;font-weight:700}
+.brand h1{font-family:"Noto Serif KR",serif;font-size:clamp(26px,4vw,40px);margin:6px 0 6px;line-height:1.15}
+.brand p{margin:0;color:#cfc6b8;font-size:15px;max-width:640px}
+.ui-lang{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:4px;border-radius:999px}
+.ui-lang button{border:0;background:transparent;color:#e8e1d6;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700}
+.ui-lang button.on{background:#fbf7f0;color:var(--ink)}
+
+/* controls */
+.controls{position:sticky;top:0;z-index:20;background:rgba(246,243,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.controls .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:12px;padding-bottom:12px}
+.seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--ink);color:#fff}
+.lbl{font-size:12px;color:var(--muted);font-weight:700;margin-right:-4px}
+.spacer{flex:1}
+
+/* language chips */
+.langs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 8px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 14px 8px 10px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;transition:.15s}
+.chip .code{font-size:11px;font-weight:900;background:var(--bg);border-radius:6px;padding:2px 6px;color:var(--muted)}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.on .code{background:var(--accent);color:#fff}
+
+.lang-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:18px 0 16px;flex-wrap:wrap}
+.lang-head h2{font-family:"Noto Serif KR",serif;font-size:30px;margin:0;line-height:1.2}
+.lang-head h2 span{font-size:16px;color:var(--muted);font-family:"Noto Sans KR";font-weight:500;margin-left:8px}
+.quick{display:flex;gap:8px;flex:1;max-width:520px}
+.quick input{flex:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px;white-space:nowrap}
+.btn.ghost{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+
+/* category cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:40px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.card-h{display:flex;align-items:center;gap:10px}
+.ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:var(--accent-soft)}
+.card-h h3{margin:0;font-size:17px}
+.card-h p{margin:0;font-size:12px;color:var(--muted)}
+.qlist{display:flex;flex-direction:column;gap:6px}
+.q{display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;transition:.15s;background:#fff}
+.q:hover{border-color:var(--accent);background:var(--accent-soft)}
+.q .tag{font-size:10px;font-weight:900;letter-spacing:.06em;color:var(--teal);background:var(--teal-soft);padding:2px 6px;border-radius:5px;flex-shrink:0}
+.q .arrow{color:var(--accent);font-weight:900}
+.q .txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* matrix */
+.matrix-wrap{overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin:22px 0 40px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:center;white-space:nowrap}
+th{position:sticky;top:0;background:var(--ink);color:#fff;font-weight:700;z-index:1}
+td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:var(--paper);font-weight:700;z-index:2}
+th:first-child{background:var(--ink);z-index:3}
+td a{display:inline-block;text-decoration:none;padding:4px 8px;border-radius:7px;background:var(--bg);margin:1px;font-weight:600}
+td a:hover{background:var(--accent);color:#fff}
+
+/* my list */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin:22px 0}
+.panel h3{margin:0 0 4px;font-size:18px}
+.panel .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.form{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 80px;gap:8px}
+.form input,.form select,.filters input,.filters select{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;font-size:13px;background:#fff;min-width:0}
+.form .memo{grid-column:1/-2}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.filters input{flex:1;min-width:180px}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:#fff}
+.item a{font-weight:700;text-decoration:none}
+.item a:hover{color:var(--accent)}
+.item .meta{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.badge{background:var(--bg);border-radius:6px;padding:1px 7px;font-weight:600}
+.item .memo{font-size:13px;margin-top:6px;color:#3c3832}
+.item .act{display:flex;gap:6px;align-items:flex-start}
+.empty{text-align:center;color:var(--muted);padding:30px;font-size:14px;border:1px dashed var(--line);border-radius:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+.note{font-size:12px;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 40px}
+footer{padding:24px 0 40px;color:var(--muted);font-size:12px;text-align:center}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:760px){
+  .form{grid-template-columns:1fr 1fr}
+  .form .memo{grid-column:1/-1}
+  .top{flex-direction:column}
+  .lang-head h2{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <div class="brand">
+      <small>DAIN EDU · SCRIBD LANGUAGE LIBRARY</small>
+      <h1 data-i="title"></h1>
+      <p data-i="subtitle"></p>
+    </div>
+    <div class="ui-lang" id="uiLang">
+      <button data-l="ko">한국어</button><button data-l="en">English</button><button data-l="es">Español</button>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="seg" id="viewSeg">
+      <button data-v="lang" data-i="vLang"></button>
+      <button data-v="matrix" data-i="vMatrix"></button>
+      <button data-v="mine" data-i="vMine"></button>
+    </div>
+    <span class="spacer"></span>
+    <span class="lbl" data-i="length"></span>
+    <div class="seg" id="lenSeg">
+      <button data-len="100+">100+</button>
+      <button data-len="4-100">4–100</button>
+      <button data-len="" data-i="all"></button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- by language -->
+  <section id="viewLang">
+    <div class="langs" id="langChips"></div>
+    <div class="lang-head">
+      <h2 id="langTitle"></h2>
+      <form class="quick" id="quickForm">
+        <input id="quickInput" autocomplete="off">
+        <button class="btn" data-i="search"></button>
+      </form>
+    </div>
+    <div class="grid" id="catGrid"></div>
+  </section>
+
+  <!-- matrix -->
+  <section id="viewMatrix" class="hidden">
+    <div class="matrix-wrap"><table id="matrix"></table></div>
+  </section>
+
+  <!-- my list -->
+  <section id="viewMine" class="hidden">
+    <div class="panel">
+      <h3 data-i="mineTitle"></h3>
+      <p class="sub" data-i="mineSub"></p>
+      <form class="form" id="addForm">
+        <input id="fUrl" type="url" required>
+        <input id="fTitle" required>
+        <select id="fLang"></select>
+        <select id="fCat"></select>
+        <input id="fPages" type="number" min="1">
+        <input id="fMemo" class="memo">
+        <button class="btn" data-i="add"></button>
+      </form>
+      <div class="filters">
+        <input id="mSearch">
+        <select id="mLang"></select>
+        <select id="mCat"></select>
+        <select id="mSort"></select>
+      </div>
+      <div class="items" id="items"></div>
+      <div class="row">
+        <button class="btn ghost sm" id="expJson" data-i="expJson"></button>
+        <button class="btn ghost sm" id="expCsv" data-i="expCsv"></button>
+        <label class="btn ghost sm"><span data-i="impJson"></span><input type="file" id="impFile" accept=".json" hidden></label>
+      </div>
+    </div>
+  </section>
+
+  <p class="note" data-i="note"></p>
+</main>
+
+<footer data-i="footer"></footer>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- data ---------- */
+const CATS = [
+  {k:'grammar', ico:'📐', ko:'문법', en:'Grammar', es:'Gramática', dko:'문법서·문법 연습', den:'Grammar books & drills', des:'Libros y ejercicios'},
+  {k:'conversation', ico:'💬', ko:'회화', en:'Conversation', es:'Conversación', dko:'말하기·실용 회화', den:'Speaking & phrases', des:'Expresión oral'},
+  {k:'vocabulary', ico:'🔤', ko:'어휘', en:'Vocabulary', es:'Vocabulario', dko:'단어장·주제별 어휘', den:'Word lists by topic', des:'Léxico por temas'},
+  {k:'culture', ico:'🏛️', ko:'문화', en:'Culture', es:'Cultura', dko:'문화·사회·역사', den:'Culture, society, history', des:'Cultura y sociedad'},
+  {k:'exam', ico:'📝', ko:'시험대비', en:'Exam prep', es:'Exámenes', dko:'공인 시험 대비', den:'Official exam prep', des:'Exámenes oficiales'},
+  {k:'course', ico:'📚', ko:'종합교재', en:'Coursebooks', es:'Manuales', dko:'학생용 교재·워크북', den:"Student's books & workbooks", des:'Libro del alumno'},
+  {k:'verbs', ico:'🔁', ko:'동사', en:'Verbs', es:'Verbos', dko:'동사 변화·활용', den:'Conjugation & usage', des:'Conjugación'},
+  {k:'reading', ico:'📖', ko:'읽기', en:'Reading', es:'Lectura', dko:'독해·리더스', den:'Readers & texts', des:'Lecturas graduadas'}
+];
+
+// q: [query, tag]  tag = EN (English query) / NAT (native-language query) / BOOK (well-known title)
+const LANGS = [
+ {c:'es', ko:'스페인어', en:'Spanish', es:'Español', nat:'Español', q:{
+  grammar:[['spanish grammar','EN'],['gramática española','NAT'],['gramática de uso del español','BOOK']],
+  conversation:[['spanish conversation','EN'],['conversación en español','NAT'],['español coloquial','NAT']],
+  vocabulary:[['spanish vocabulary','EN'],['vocabulario español','NAT'],['vocabulario ELE','NAT']],
+  culture:[['spanish culture','EN'],['cultura hispana','NAT'],['cultura latinoamericana','NAT']],
+  exam:[['DELE','EXAM'],['SIELE','EXAM'],['preparación DELE B2','NAT']],
+  course:[['spanish textbook','EN'],['libro del alumno ELE','NAT'],['Aula Internacional','BOOK']],
+  verbs:[['spanish verbs','EN'],['verbos en español','NAT'],['conjugación verbos españoles','NAT']],
+  reading:[['spanish reading','EN'],['lecturas graduadas español','NAT'],['lecturas ELE','NAT']]}},
+ {c:'en', ko:'영어', en:'English', es:'Inglés', nat:'English', q:{
+  grammar:[['english grammar','EN'],['grammar in use','BOOK'],['english grammar exercises','EN']],
+  conversation:[['english conversation','EN'],['speaking english','EN'],['english speaking practice','EN']],
+  vocabulary:[['english vocabulary','EN'],['vocabulary in use','BOOK'],['english collocations','EN']],
+  culture:[['american culture','EN'],['british culture','EN'],['culture english speaking countries','EN']],
+  exam:[['IELTS','EXAM'],['TOEFL','EXAM'],['TOEIC','EXAM']],
+  course:[["english student's book",'EN'],['english coursebook','EN'],['english workbook','EN']],
+  verbs:[['phrasal verbs','EN'],['english verbs','EN'],['english tenses','EN']],
+  reading:[['english reading','EN'],['graded readers english','EN'],['english reading comprehension','EN']]}},
+ {c:'fr', ko:'프랑스어', en:'French', es:'Francés', nat:'Français', q:{
+  grammar:[['french grammar','EN'],['grammaire française','NAT'],['grammaire progressive du français','BOOK']],
+  conversation:[['french conversation','EN'],['conversation en français','NAT'],['français oral','NAT']],
+  vocabulary:[['french vocabulary','EN'],['vocabulaire français','NAT'],['vocabulaire progressif du français','BOOK']],
+  culture:[['french culture','EN'],['civilisation française','NAT'],['civilisation progressive','BOOK']],
+  exam:[['DELF','EXAM'],['DALF','EXAM'],['TCF','EXAM']],
+  course:[['french textbook','EN'],['livre de l\'élève FLE','NAT'],['méthode de français','NAT']],
+  verbs:[['french verbs','EN'],['conjugaison française','NAT'],['bescherelle','BOOK']],
+  reading:[['french reading','EN'],['lectures en français facile','NAT'],['lecture FLE','NAT']]}},
+ {c:'de', ko:'독일어', en:'German', es:'Alemán', nat:'Deutsch', q:{
+  grammar:[['german grammar','EN'],['deutsche grammatik','NAT'],['grammatik aktiv','BOOK']],
+  conversation:[['german conversation','EN'],['deutsch sprechen','NAT'],['redemittel deutsch','NAT']],
+  vocabulary:[['german vocabulary','EN'],['deutscher wortschatz','NAT'],['wortschatz DaF','NAT']],
+  culture:[['german culture','EN'],['landeskunde deutschland','NAT'],['deutsche kultur','NAT']],
+  exam:[['goethe zertifikat','EXAM'],['TestDaF','EXAM'],['telc deutsch','EXAM']],
+  course:[['german textbook','EN'],['kursbuch deutsch','NAT'],['Menschen kursbuch','BOOK']],
+  verbs:[['german verbs','EN'],['deutsche verben','NAT'],['verben mit präpositionen','NAT']],
+  reading:[['german reading','EN'],['deutsch lesen','NAT'],['lesetexte DaF','NAT']]}},
+ {c:'it', ko:'이탈리아어', en:'Italian', es:'Italiano', nat:'Italiano', q:{
+  grammar:[['italian grammar','EN'],['grammatica italiana','NAT'],['grammatica avanzata italiano','NAT']],
+  conversation:[['italian conversation','EN'],['conversazione italiano','NAT'],['parlare italiano','NAT']],
+  vocabulary:[['italian vocabulary','EN'],['vocabolario italiano','NAT'],['parole italiane','NAT']],
+  culture:[['italian culture','EN'],['cultura italiana','NAT'],['civiltà italiana','NAT']],
+  exam:[['CILS','EXAM'],['CELI italiano','EXAM'],['PLIDA','EXAM']],
+  course:[['italian textbook','EN'],['libro dello studente italiano','NAT'],['Nuovo Espresso','BOOK']],
+  verbs:[['italian verbs','EN'],['verbi italiani','NAT'],['coniugazione verbi italiani','NAT']],
+  reading:[['italian reading','EN'],['letture italiano facile','NAT'],['racconti italiano stranieri','NAT']]}},
+ {c:'pt', ko:'포르투갈어', en:'Portuguese', es:'Portugués', nat:'Português', q:{
+  grammar:[['portuguese grammar','EN'],['gramática portuguesa','NAT'],['gramática ativa','BOOK']],
+  conversation:[['portuguese conversation','EN'],['conversação em português','NAT'],['português falado','NAT']],
+  vocabulary:[['portuguese vocabulary','EN'],['vocabulário português','NAT'],['vocabulário PLE','NAT']],
+  culture:[['brazilian culture','EN'],['cultura portuguesa','NAT'],['cultura brasileira','NAT']],
+  exam:[['CELPE-Bras','EXAM'],['CAPLE','EXAM'],['exame de português estrangeiros','NAT']],
+  course:[['portuguese textbook','EN'],['português para estrangeiros','NAT'],['Novo Avenida Brasil','BOOK']],
+  verbs:[['portuguese verbs','EN'],['verbos portugueses','NAT'],['conjugação verbal português','NAT']],
+  reading:[['portuguese reading','EN'],['leitura em português','NAT'],['textos PLE','NAT']]}},
+ {c:'ja', ko:'일본어', en:'Japanese', es:'Japonés', nat:'日本語', q:{
+  grammar:[['japanese grammar','EN'],['日本語 文法','NAT'],['dictionary of basic japanese grammar','BOOK']],
+  conversation:[['japanese conversation','EN'],['日本語 会話','NAT'],['japanese phrases','EN']],
+  vocabulary:[['japanese vocabulary','EN'],['kanji','EN'],['日本語 語彙','NAT']],
+  culture:[['japanese culture','EN'],['日本文化','NAT'],['japan society','EN']],
+  exam:[['JLPT','EXAM'],['JLPT N3','EXAM'],['日本語能力試験','NAT']],
+  course:[['genki japanese','BOOK'],['minna no nihongo','BOOK'],['japanese textbook','EN']],
+  verbs:[['japanese verbs','EN'],['japanese verb conjugation','EN'],['日本語 動詞','NAT']],
+  reading:[['japanese reading','EN'],['日本語 読解','NAT'],['japanese graded readers','EN']]}},
+ {c:'zh', ko:'중국어', en:'Chinese', es:'Chino', nat:'中文', q:{
+  grammar:[['chinese grammar','EN'],['汉语语法','NAT'],['modern mandarin chinese grammar','BOOK']],
+  conversation:[['chinese conversation','EN'],['汉语口语','NAT'],['mandarin phrases','EN']],
+  vocabulary:[['chinese vocabulary','EN'],['chinese characters','EN'],['汉语词汇','NAT']],
+  culture:[['chinese culture','EN'],['中国文化','NAT'],['china society history','EN']],
+  exam:[['HSK','EXAM'],['HSK 标准教程','BOOK'],['HSK 4','EXAM']],
+  course:[['chinese textbook','EN'],['汉语教程','NAT'],['integrated chinese','BOOK']],
+  verbs:[['chinese verbs','EN'],['mandarin verbs','EN'],['汉语动词','NAT']],
+  reading:[['chinese reading','EN'],['汉语阅读','NAT'],['chinese graded readers','EN']]}},
+ {c:'ko', ko:'한국어', en:'Korean', es:'Coreano', nat:'한국어', q:{
+  grammar:[['korean grammar','EN'],['한국어 문법','NAT'],['korean grammar in use','BOOK']],
+  conversation:[['korean conversation','EN'],['한국어 회화','NAT'],['korean phrases','EN']],
+  vocabulary:[['korean vocabulary','EN'],['한국어 어휘','NAT'],['TOPIK vocabulary','EXAM']],
+  culture:[['korean culture','EN'],['한국 문화','NAT'],['korea society','EN']],
+  exam:[['TOPIK','EXAM'],['TOPIK II','EXAM'],['한국어능력시험','NAT']],
+  course:[['korean textbook','EN'],['sogang korean','BOOK'],['서울대 한국어','BOOK']],
+  verbs:[['korean verbs','EN'],['korean verb conjugation','EN'],['한국어 동사','NAT']],
+  reading:[['korean reading','EN'],['한국어 읽기','NAT'],['korean graded reader','EN']]}},
+ {c:'ru', ko:'러시아어', en:'Russian', es:'Ruso', nat:'Русский', q:{
+  grammar:[['russian grammar','EN'],['грамматика русского языка','NAT'],['russian grammar in use','EN']],
+  conversation:[['russian conversation','EN'],['разговорный русский','NAT'],['русский язык диалоги','NAT']],
+  vocabulary:[['russian vocabulary','EN'],['лексика русского языка','NAT'],['russian words','EN']],
+  culture:[['russian culture','EN'],['русская культура','NAT'],['russia history culture','EN']],
+  exam:[['TORFL','EXAM'],['ТРКИ','EXAM'],['тест по русскому языку как иностранному','NAT']],
+  course:[['russian textbook','EN'],['учебник русского языка','NAT'],['русский язык для иностранцев','NAT']],
+  verbs:[['russian verbs','EN'],['русские глаголы','NAT'],['verbs of motion russian','EN']],
+  reading:[['russian reading','EN'],['чтение на русском','NAT'],['russian reader','EN']]}},
+ {c:'ar', ko:'아랍어', en:'Arabic', es:'Árabe', nat:'العربية', q:{
+  grammar:[['arabic grammar','EN'],['قواعد اللغة العربية','NAT'],['arabic grammar exercises','EN']],
+  conversation:[['arabic conversation','EN'],['spoken arabic','EN'],['المحادثة العربية','NAT']],
+  vocabulary:[['arabic vocabulary','EN'],['arabic words','EN'],['مفردات عربية','NAT']],
+  culture:[['arab culture','EN'],['arabic culture','EN'],['الثقافة العربية','NAT']],
+  exam:[['arabic proficiency test','EXAM'],['arabic exam','EXAM'],['اختبار الكفاءة العربية','NAT']],
+  course:[['arabic textbook','EN'],['al-kitaab arabic','BOOK'],['العربية بين يديك','BOOK']],
+  verbs:[['arabic verbs','EN'],['arabic verb conjugation','EN'],['الأفعال العربية','NAT']],
+  reading:[['arabic reading','EN'],['arabic reader','EN'],['قراءة عربية','NAT']]}},
+ {c:'la', ko:'라틴어', en:'Latin', es:'Latín', nat:'Latina', q:{
+  grammar:[['latin grammar','EN'],['grammatica latina','NAT'],['complete latin','BOOK']],
+  conversation:[['spoken latin','EN'],['latin conversation','EN'],['colloquia latina','NAT']],
+  vocabulary:[['latin vocabulary','EN'],['latin dictionary','EN'],['vocabula latina','NAT']],
+  culture:[['roman culture','EN'],['ancient rome','EN'],['roman civilization','EN']],
+  exam:[['AP Latin','EXAM'],['latin exam','EXAM'],['national latin exam','EXAM']],
+  course:[['latin textbook','EN'],['lingua latina per se illustrata','BOOK'],['wheelock latin','BOOK']],
+  verbs:[['latin verbs','EN'],['latin verb conjugation','EN'],['501 latin verbs','BOOK']],
+  reading:[['latin reader','EN'],['latin reading','EN'],['fabulae latinae','NAT']]}},
+ {c:'ca', ko:'카탈루냐어', en:'Catalan', es:'Catalán', nat:'Català', q:{
+  grammar:[['catalan grammar','EN'],['gramàtica catalana','NAT'],['catalan essential grammar','BOOK']],
+  conversation:[['catalan conversation','EN'],['conversa en català','NAT'],['català oral','NAT']],
+  vocabulary:[['catalan vocabulary','EN'],['vocabulari català','NAT'],['lèxic català','NAT']],
+  culture:[['catalan culture','EN'],['cultura catalana','NAT'],['història de Catalunya','NAT']],
+  exam:[['certificat català','EXAM'],['nivell C1 català','EXAM'],['nivell B2 català','EXAM']],
+  course:[['catalan textbook','EN'],['curs de català','NAT'],['Veus català','BOOK']],
+  verbs:[['catalan verbs','EN'],['verbs catalans','NAT'],['conjugació verbal catalana','NAT']],
+  reading:[['catalan reading','EN'],['lectures en català','NAT'],['lectura fàcil català','NAT']]}}
+];
+
+/* ---------- i18n ---------- */
+const T = {
+ ko:{title:'언어별 교재 찾기 · Scribd Library',subtitle:'13개 언어 × 8개 분야. 클릭 한 번으로 Scribd에서 100페이지 이상 교재만 골라 보는 검색 허브입니다.',
+  vLang:'언어별',vMatrix:'한눈에 보기',vMine:'내 목록',length:'분량',all:'전체',search:'검색',quickPh:'키워드로 직접 검색 (예: subjuntivo)',
+  open:'Scribd에서 열기',lang:'언어',
+  mineTitle:'내 교재 목록',mineSub:'Scribd에서 찾은 문서의 주소를 저장해 두세요. 이 브라우저에만 저장되며, JSON으로 내보내 다른 기기에서 불러올 수 있습니다.',
+  add:'추가',url:'Scribd 문서 주소',ttl:'제목',pages:'페이지',memo:'메모 (레벨, 용도 등)',allLang:'모든 언어',allCat:'모든 분야',
+  findMine:'내 목록에서 찾기',sNew:'최근 추가순',sTitle:'제목순',sPages:'페이지 많은순',
+  empty:'아직 저장한 교재가 없습니다. 위에서 Scribd 문서 주소를 붙여 넣어 추가하세요.',none:'조건에 맞는 항목이 없습니다.',
+  del:'삭제',delQ:'이 항목을 삭제할까요?',added:'추가했습니다',deleted:'삭제했습니다',imported:'개 항목을 불러왔습니다',bad:'파일을 읽을 수 없습니다',
+  expJson:'JSON 내보내기',expCsv:'CSV 내보내기',impJson:'JSON 불러오기',
+  tagEN:'EN',tagNAT:'현지어',tagBOOK:'교재명',tagEXAM:'시험',
+  note:'이 사이트는 Scribd 검색 결과로 연결되는 링크 모음이며 문서를 보관하거나 배포하지 않습니다. Scribd 문서 중에는 저작권자 허락 없이 올라온 출판 교재도 있으니, 수업 자료로 쓸 때는 업로더가 직접 만든 자료나 공개 라이선스 자료인지 확인하세요.',
+  footer:'다인에듀 · 후안샘 · Scribd는 Scribd, Inc.의 상표이며 이 사이트는 Scribd와 무관합니다.'},
+ en:{title:'Language Textbook Finder · Scribd Library',subtitle:'13 languages × 8 skill areas. One click opens Scribd results already filtered to documents of 100+ pages.',
+  vLang:'By language',vMatrix:'Overview',vMine:'My list',length:'Length',all:'All',search:'Search',quickPh:'Search your own keyword (e.g. subjunctive)',
+  open:'Open on Scribd',lang:'Language',
+  mineTitle:'My textbook list',mineSub:'Save Scribd documents you found. Stored only in this browser — export to JSON to move it to another device.',
+  add:'Add',url:'Scribd document URL',ttl:'Title',pages:'Pages',memo:'Note (level, purpose…)',allLang:'All languages',allCat:'All areas',
+  findMine:'Search my list',sNew:'Newest first',sTitle:'By title',sPages:'Most pages',
+  empty:'Nothing saved yet. Paste a Scribd document URL above to add one.',none:'No items match.',
+  del:'Delete',delQ:'Delete this item?',added:'Added',deleted:'Deleted',imported:' items imported',bad:'Could not read file',
+  expJson:'Export JSON',expCsv:'Export CSV',impJson:'Import JSON',
+  tagEN:'EN',tagNAT:'Native',tagBOOK:'Title',tagEXAM:'Exam',
+  note:'This site only links to Scribd search results; it does not host or distribute documents. Some Scribd uploads are published textbooks posted without permission — for class use, prefer material created by the uploader or openly licensed.',
+  footer:'Dain Edu · Juan-saem · Scribd is a trademark of Scribd, Inc. This site is not affiliated with Scribd.'},
+ es:{title:'Buscador de manuales · Scribd Library',subtitle:'13 idiomas × 8 áreas. Un clic abre Scribd con resultados de más de 100 páginas.',
+  vLang:'Por idioma',vMatrix:'Vista general',vMine:'Mi lista',length:'Extensión',all:'Todas',search:'Buscar',quickPh:'Busca tu propia palabra (p. ej. subjuntivo)',
+  open:'Abrir en Scribd',lang:'Idioma',
+  mineTitle:'Mi lista de manuales',mineSub:'Guarda los documentos que encuentres en Scribd. Se guardan solo en este navegador; exporta a JSON para usarlos en otro equipo.',
+  add:'Añadir',url:'URL del documento de Scribd',ttl:'Título',pages:'Páginas',memo:'Nota (nivel, uso…)',allLang:'Todos los idiomas',allCat:'Todas las áreas',
+  findMine:'Buscar en mi lista',sNew:'Más recientes',sTitle:'Por título',sPages:'Más páginas',
+  empty:'Todavía no hay nada guardado. Pega arriba la URL de un documento de Scribd.',none:'No hay resultados.',
+  del:'Borrar',delQ:'¿Borrar este elemento?',added:'Añadido',deleted:'Borrado',imported:' elementos importados',bad:'No se pudo leer el archivo',
+  expJson:'Exportar JSON',expCsv:'Exportar CSV',impJson:'Importar JSON',
+  tagEN:'EN',tagNAT:'Nativo',tagBOOK:'Título',tagEXAM:'Examen',
+  note:'Este sitio solo enlaza a búsquedas de Scribd; no aloja ni distribuye documentos. Algunos archivos de Scribd son libros publicados subidos sin permiso: para clase, usa material propio del autor o con licencia abierta.',
+  footer:'Dain Edu · Juan-saem · Scribd es marca de Scribd, Inc. Este sitio no está afiliado a Scribd.'}
+};
+
+/* ---------- storage (safe) ---------- */
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+let S = {
+  ui: store.get('sll_ui', (navigator.language||'ko').slice(0,2)),
+  view: store.get('sll_view','lang'),
+  len: store.get('sll_len','100+'),
+  lang: store.get('sll_lang','es')
+};
+if(!T[S.ui]) S.ui='ko';
+let MINE = store.get('sll_mine',[]);
+const save=()=>{store.set('sll_ui',S.ui);store.set('sll_view',S.view);store.set('sll_len',S.len);store.set('sll_lang',S.lang)};
+
+const t=k=>T[S.ui][k]??k;
+const nm=o=>o[S.ui]||o.en;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+
+function scribdUrl(q){
+  let u='https://www.scribd.com/search?query='+encodeURIComponent(q).replace(/%20/g,'+')+'&content_type=documents&ct_lang=0';
+  if(S.len) u+='&filters='+encodeURIComponent(JSON.stringify({num_pages:S.len}));
+  return u;
+}
+function toast(m){const el=$('#toast');el.textContent=m;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1800)}
+
+/* ---------- render ---------- */
+function renderStatic(){
+  document.documentElement.lang=S.ui;
+  document.querySelectorAll('[data-i]').forEach(el=>el.textContent=t(el.dataset.i));
+  document.querySelectorAll('#uiLang button').forEach(b=>b.classList.toggle('on',b.dataset.l===S.ui));
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view));
+  document.querySelectorAll('#lenSeg button').forEach(b=>b.classList.toggle('on',b.dataset.len===S.len));
+  $('#quickInput').placeholder=t('quickPh');
+  $('#fUrl').placeholder=t('url');$('#fTitle').placeholder=t('ttl');$('#fPages').placeholder=t('pages');$('#fMemo').placeholder=t('memo');
+  $('#mSearch').placeholder=t('findMine');
+  const langOpts=LANGS.map(l=>`<option value="${l.c}">${esc(nm(l))}</option>`).join('');
+  const catOpts=CATS.map(c=>`<option value="${c.k}">${c.ico} ${esc(nm(c))}</option>`).join('');
+  const keep=(id,html)=>{const el=$(id);const v=el.value;el.innerHTML=html;if(v)el.value=v;};
+  keep('#fLang',langOpts); keep('#fCat',catOpts);
+  if(!$('#fLang').value) $('#fLang').value=S.lang;
+  keep('#mLang',`<option value="">${t('allLang')}</option>`+langOpts);
+  keep('#mCat',`<option value="">${t('allCat')}</option>`+catOpts);
+  keep('#mSort',`<option value="new">${t('sNew')}</option><option value="title">${t('sTitle')}</option><option value="pages">${t('sPages')}</option>`);
+  ['lang','matrix','mine'].forEach(v=>$('#view'+v[0].toUpperCase()+v.slice(1)).classList.toggle('hidden',S.view!==v));
+}
+
+function renderLang(){
+  $('#langChips').innerHTML=LANGS.map(l=>`<button class="chip ${l.c===S.lang?'on':''}" data-c="${l.c}"><span class="code">${l.c.toUpperCase()}</span>${esc(nm(l))}</button>`).join('');
+  const L=LANGS.find(l=>l.c===S.lang)||LANGS[0];
+  $('#langTitle').innerHTML=`${esc(nm(L))}<span>${esc(L.nat)}</span>`;
+  $('#catGrid').innerHTML=CATS.map(c=>{
+    const qs=L.q[c.k]||[];
+    return `<article class="card">
+      <div class="card-h"><div class="ico">${c.ico}</div><div><h3>${esc(nm(c))}</h3><p>${esc(c['d'+S.ui]||c.den)}</p></div></div>
+      <div class="qlist">${qs.map(([q,tg])=>`<a class="q" href="${scribdUrl(q)}" target="_blank" rel="noopener" title="${esc(t('open'))}: ${esc(q)}">
+        <span class="tag">${esc(t('tag'+tg))}</span><span class="txt">${esc(q)}</span><span class="arrow">↗</span></a>`).join('')}</div>
+    </article>`;
+  }).join('');
+}
+
+function renderMatrix(){
+  const head=`<tr><th>${t('lang')}</th>${CATS.map(c=>`<th>${c.ico} ${esc(nm(c))}</th>`).join('')}</tr>`;
+  const rows=LANGS.map(l=>`<tr><td>${esc(nm(l))} <span style="color:var(--muted);font-weight:500">${esc(l.nat)}</span></td>${
+    CATS.map(c=>`<td>${(l.q[c.k]||[]).slice(0,2).map(([q,tg])=>`<a href="${scribdUrl(q)}" target="_blank" rel="noopener" title="${esc(q)}">${tg==='EN'?'EN':esc(t('tag'+tg))}</a>`).join('')}</td>`).join('')
+  }</tr>`).join('');
+  $('#matrix').innerHTML=head+rows;
+}
+
+function renderMine(){
+  const q=$('#mSearch').value.trim().toLowerCase(), fl=$('#mLang').value, fc=$('#mCat').value, so=$('#mSort').value||'new';
+  let arr=MINE.filter(m=>(!fl||m.lang===fl)&&(!fc||m.cat===fc)&&(!q||(m.title+' '+m.memo+' '+m.url).toLowerCase().includes(q)));
+  if(so==='title') arr.sort((a,b)=>a.title.localeCompare(b.title));
+  else if(so==='pages') arr.sort((a,b)=>(b.pages||0)-(a.pages||0));
+  else arr.sort((a,b)=>b.added-a.added);
+  if(!MINE.length){$('#items').innerHTML=`<div class="empty">${t('empty')}</div>`;return;}
+  if(!arr.length){$('#items').innerHTML=`<div class="empty">${t('none')}</div>`;return;}
+  $('#items').innerHTML=arr.map(m=>{
+    const L=LANGS.find(l=>l.c===m.lang), C=CATS.find(c=>c.k===m.cat);
+    return `<div class="item"><div>
+      <a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a>
+      <div class="meta">${L?`<span class="badge">${esc(nm(L))}</span>`:''}${C?`<span class="badge">${C.ico} ${esc(nm(C))}</span>`:''}${m.pages?`<span class="badge">${m.pages}p</span>`:''}</div>
+      ${m.memo?`<div class="memo">${esc(m.memo)}</div>`:''}
+    </div><div class="act"><button class="btn ghost sm" data-del="${m.id}">${t('del')}</button></div></div>`;
+  }).join('');
+}
+
+function render(){renderStatic();if(S.view==='lang')renderLang();if(S.view==='matrix')renderMatrix();if(S.view==='mine')renderMine();save();}
+
+/* ---------- events ---------- */
+$('#uiLang').onclick=e=>{const b=e.target.closest('button');if(b){S.ui=b.dataset.l;render();}};
+$('#viewSeg').onclick=e=>{const b=e.target.closest('button');if(b){S.view=b.dataset.v;render();}};
+$('#lenSeg').onclick=e=>{const b=e.target.closest('button');if(b){S.len=b.dataset.len;render();}};
+$('#langChips').onclick=e=>{const b=e.target.closest('.chip');if(b){S.lang=b.dataset.c;$('#fLang').value=S.lang;render();}};
+$('#quickForm').onsubmit=e=>{e.preventDefault();const v=$('#quickInput').value.trim();if(!v)return;
+  const L=LANGS.find(l=>l.c===S.lang);const q=(L.c==='en'?'english ':L.en.toLowerCase()+' ')+v;
+  window.open(scribdUrl(q),'_blank','noopener');};
+$('#addForm').onsubmit=e=>{e.preventDefault();
+  const url=$('#fUrl').value.trim();
+  if(!/^https?:\/\//i.test(url)) return;
+  MINE.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),url,title:$('#fTitle').value.trim(),lang:$('#fLang').value,cat:$('#fCat').value,pages:parseInt($('#fPages').value)||null,memo:$('#fMemo').value.trim(),added:Date.now()});
+  store.set('sll_mine',MINE);['#fUrl','#fTitle','#fPages','#fMemo'].forEach(s=>$(s).value='');toast(t('added'));renderMine();};
+// auto-fill title from Scribd URL slug
+$('#fUrl').addEventListener('input',()=>{const m=$('#fUrl').value.match(/scribd\.com\/(?:document|doc|book)\/\d+\/([^/?#]+)/i);
+  if(m&&!$('#fTitle').value) $('#fTitle').value=decodeURIComponent(m[1]).replace(/[-_]+/g,' ').trim();});
+['#mSearch','#mLang','#mCat','#mSort'].forEach(s=>$(s).addEventListener('input',renderMine));
+$('#items').onclick=e=>{const b=e.target.closest('[data-del]');if(!b)return;if(!confirm(t('delQ')))return;
+  MINE=MINE.filter(m=>m.id!==b.dataset.del);store.set('sll_mine',MINE);toast(t('deleted'));renderMine();};
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+$('#expJson').onclick=()=>dl('scribd_my_list.json',JSON.stringify(MINE,null,2),'application/json');
+$('#expCsv').onclick=()=>{const cols=['title','url','lang','cat','pages','memo'];
+  const csv='﻿'+cols.join(',')+'\n'+MINE.map(m=>cols.map(c=>'"'+String(m[c]??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  dl('scribd_my_list.csv',csv,'text/csv');};
+$('#impFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  try{const arr=JSON.parse(await f.text());if(!Array.isArray(arr))throw 0;
+    const have=new Set(MINE.map(m=>m.url));let n=0;
+    arr.forEach(m=>{if(m&&m.url&&/^https?:\/\//i.test(m.url)&&!have.has(m.url)){MINE.push({id:m.id||Date.now().toString(36)+n,url:m.url,title:String(m.title||m.url),lang:m.lang||'',cat:m.cat||'',pages:m.pages||null,memo:m.memo||'',added:m.added||Date.now()});n++;}});
+    store.set('sll_mine',MINE);toast(n+t('imported'));renderMine();
+  }catch(_){toast(t('bad'))}e.target.value='';};
+
+render();
+</script>
+</body>
+</html>
